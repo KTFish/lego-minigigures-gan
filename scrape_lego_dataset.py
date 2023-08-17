@@ -5,8 +5,7 @@
 # - scraping.py - all the logic of scraping a page. Helper functions and the main loop can be found there.
 # - utils.py - other helper functions.
 
-from scraping_scripts import utils, config, scrapping
-from scraping_scripts.configure_webrdiver import get_webdriver 
+from scraping_scripts import utils, config, scraping
 import os
 import re
 import time
@@ -32,7 +31,7 @@ os.environ['PATH'] += '.'  # Add webdriver to PATH
 utils.create_folder(folder_name='dataset', root="./")
 
 # Initialize and access webdriver
-driver = get_webdriver()
+# driver = get_webdriver()
 
 # Run the scraiping script
-scrapping.run()
+scraping.run()

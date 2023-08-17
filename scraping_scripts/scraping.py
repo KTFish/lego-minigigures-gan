@@ -1,6 +1,5 @@
 import shutil
-import config
-import utils
+from scraping_scripts import config, utils, configure_webdriver
 import os
 import re
 import time
@@ -20,10 +19,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 
-
-driver = config.DRIVER
-
-def get_categories()-> Tuple[Dict[str, str], Dict[str, int]]:
+def get_categories(driver)-> Tuple[Dict[str, str], Dict[str, int]]:
     """
     Get the list of all categories of minifigures.
     """
@@ -41,7 +37,7 @@ def get_categories()-> Tuple[Dict[str, str], Dict[str, int]]:
     for element in category_elements:
         # Extract the link
         link = element.get_attribute("data-val")
-        category = clean_category_name(element.text)
+        category = utils.clean_category_name(element.text)
         category_to_link[category] = link
         
         # Extract the category count
@@ -56,7 +52,7 @@ def get_categories()-> Tuple[Dict[str, str], Dict[str, int]]:
     
     return category_to_link, category_to_count
 
-def scrape(category: str) -> None:
+def scrape(category: str, driver) -> None:
     """
     Function for scraping a single page. It scrapes the minifigures images and names.
     """
@@ -85,7 +81,7 @@ def scrape(category: str) -> None:
             shutil.copyfileobj(response.raw, file)
             print(f"Image saved to: {save_path}")
 
-def scrape_all_pages(url: str, category:str) -> None:
+def scrape_all_pages(url: str, category:str, driver) -> None:
     """
     Gets a url to a specific minifigures category and scrapes all the images (from sub page 1, 2, 3, ... n).
     """
@@ -96,7 +92,7 @@ def scrape_all_pages(url: str, category:str) -> None:
     while True:
 
         # Call the scrape() function on the current page
-        scrape(category=category)
+        scrape(category=category, driver=driver)
 
         # Find the 'next' button and check if it is disabled (last page)
         try:
@@ -121,9 +117,12 @@ def scrape_all_pages(url: str, category:str) -> None:
     #driver.quit()
 
 
-def run_main_scraping_loop():
+def run():
+    # Initialize and access webdriver
+    driver = configure_webdriver.get_webdriver()
+
     # Scrape category names, links and number of minifigures per category
-    category_to_link, category_to_number = utils.get_categories()
+    category_to_link, category_to_number = get_categories(driver)
 
     # Print out information about the number of categories and images to scrape
     number_of_all_images = sum([x for x in category_to_number.values()])
@@ -134,11 +133,11 @@ def run_main_scraping_loop():
     print(f"Scraping lego minifigure images started.")
     for category, link in category_to_link.items():
         # Create folder to store images
-        path = create_folder(folder_name=category, root="./dataset")
+        path = utils.create_folder(folder_name=category, root="./dataset")
         print(path, category)
         # Check if the category was scraped before if not scrape if
         desired_count = category_to_number[category]
-        real_count = count_images_in_directory(path)
+        real_count = utils.count_images_in_directory(path)
         print(f"For now there are {real_count} scraped images from {desired_count} images.")
         if desired_count != real_count:
             # Access the full link
@@ -147,13 +146,13 @@ def run_main_scraping_loop():
             print(f"Current scraped category: {category.upper()} from: {full_link}")
 
             # Scrape all images from given category and close the page
-            scrape_all_pages(full_link, category)
+            scrape_all_pages(full_link, category, driver=driver)
 
             # Open the main page again
-            driver.get(base_path)
+            driver.get(utils.base_path)
             driver.maximize_window() # Fit the window to your screen
         else:
             print(f"All images ({real_count}) from category {category} have already been scraped.\
                 Skippin scraping {category}. Scraiping the next category...")
         
-        # After scraping the whole category go to the next one..
+        # After scraping the whole category go to the next one...
