@@ -25,16 +25,17 @@ def train_step(
 
     model.to(device)
     model.train()
-    train_loss, train_acc = 0, 0
+    train_loss, train_acc = 0.0, 0.0
     for X, y in dataloader:
-        X, y = X.to(device), y.to(device)
-        y_pred = model(X)
-
-        loss = loss_fn(y_pred, y)
+        X, y = X.to(device), y.to(device, dtype=torch.float32)
+        y_logits = model(X).squeeze()
+        y_pred = torch.round(torch.sigmoid(y_logits))
+        # print(y_logits.shape, y.shape)
+        loss = loss_fn(y_logits, y)
         train_loss += loss.item()
 
-        y_pred_classes = torch.argmax(y_pred, dim=1)
-        acc = torch.eq(y_pred_classes, y).sum().item() / len(y)
+        # y_pred_classes = torch.argmax(y_pred, dim=1)
+        acc = torch.eq(y_pred, y).sum().item() / y.size(0)
         train_acc += acc
 
         optimizer.zero_grad()
@@ -56,14 +57,15 @@ def test_step(
     with torch.inference_mode():
         test_loss, test_acc = 0, 0
         for X, y in dataloader:
-            X, y = X.to(device), y.to(device)
-            y_pred = model(X)
+            X, y = X.to(device), y.to(device, dtype=torch.float32)
+            y_logits = model(X).squeeze()
+            y_pred = torch.round(torch.sigmoid(y_logits))
 
-            loss = loss_fn(y_pred, y)
+            loss = loss_fn(y_logits, y)
             test_loss += loss.item()
 
-            y_pred_classes = torch.argmax(y_pred, dim=1)
-            acc = torch.eq(y_pred_classes, y).sum().item() / len(y)
+            # y_pred_classes = torch.argmax(y_pred, dim=1)
+            acc = torch.eq(y_pred, y).sum().item() / len(y)
             test_acc += acc
 
     test_loss /= len(dataloader)
@@ -111,4 +113,5 @@ def train(
         results["train_loss"].append(train_loss)
         results["test_acc"].append(test_acc)
         results["test_loss"].append(test_loss)
+    torch.save(model.state_dict(), "my_model.pth")
     return results

@@ -33,13 +33,13 @@ class CNN(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.conv1(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.conv2(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.conv3(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.fc(x)
-        print(x.shape)
+        # print(x.shape)
         return x
 
 
@@ -47,9 +47,18 @@ def test_cnn() -> None:
     model = CNN()
     X = torch.rand(32, 3, 32, 32)
     pred = model(X)
-
     assert pred.shape == torch.Size([32, 1])
 
 
 if __name__ == "__main__":
-    test_cnn()
+    # test_cnn()
+    model = CNN()
+    import dataset
+
+    loader, _ = dataset.get_dataloaders(32)
+    X, y = next(iter(loader))
+    y = y.to(dtype=torch.float32)
+    y_logits = model(X)
+    print(y_logits.shape, y_logits.squeeze().shape, X.shape, y.shape)
+    print(y_logits.dtype, y.dtype)
+    print(y)
