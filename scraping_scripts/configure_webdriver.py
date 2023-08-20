@@ -21,7 +21,7 @@ def get_webdriver(window_size:str="--window-size=1920, 1080") -> webdriver.Chrom
     driver.get(config.base_path)
     driver.maximize_window() # Fit the window to your screen
 
-    # Check if  the driver has the type I thing it should have xD
+    # TODO: Check if  the driver has the type I thing it should have xD
     assert type(driver) == webdriver.Chrome
 
     return driver

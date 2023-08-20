@@ -111,7 +111,7 @@ def scrape_all_pages(url: str, category:str, driver) -> None:
         driver.execute_script("arguments[0].click();", next_button)
 
         # Wait for a few seconds (you can adjust the time if needed)
-        time.sleep(5)
+        time.sleep(3)
     
     # Exiting driver after scraping all pages from given category
     #driver.quit()
@@ -138,8 +138,8 @@ def run():
         # Check if the category was scraped before if not scrape if
         desired_count = category_to_number[category]
         real_count = utils.count_images_in_directory(path)
-        print(f"For now there are {real_count} scraped images from {desired_count} images.")
-        if desired_count != real_count:
+        print(f"For now there are {real_count} / {desired_count} images scraped.")
+        if desired_count != real_count and category not in config.skip_categories:
             # Access the full link
             full_link = "https://brickset.com" + link
 
@@ -149,10 +149,10 @@ def run():
             scrape_all_pages(full_link, category, driver=driver)
 
             # Open the main page again
-            driver.get(utils.base_path)
-            driver.maximize_window() # Fit the window to your screen
+            driver.get(config.base_path)
+            # driver.maximize_window() # Fit the window to your screen
         else:
-            print(f"All images ({real_count}) from category {category} have already been scraped.\
-                Skippin scraping {category}. Scraiping the next category...")
+            print(f"All images ({real_count}) from category {category.upper()} have already been scraped.")
+            print(f"Skippin scraping {category}. Scraiping the next category...")
         
         # After scraping the whole category go to the next one...

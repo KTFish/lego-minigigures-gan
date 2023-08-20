@@ -8,7 +8,7 @@ def create_folder(folder_name: str, root: str) -> str:
     return full_path
 
 def clean_name(minifigure_name: str) -> str:
-    invalid_chars = r'.[\\/:\*\?"<>\|]\& \''
+    invalid_chars = r'.[\\/:\*\?"<>\|]\& \','
     for c in invalid_chars:
         minifigure_name = minifigure_name.replace(c, '-')
     return re.sub(r'-+', '-', minifigure_name)
@@ -27,8 +27,13 @@ def clean_category_name(category: str) -> str:
     # Replace all spaces with dash
     result = result.strip().replace(' ', '-')
     result = result.replace('.','')
+                            
+    invalid_chars = r'.[\\/:\*\?"<>\|]\& \','
+    for c in invalid_chars:
+        result = result.replace(c, '-')
     
-    return result.lower()
+    result =  result.lower()
+    return re.sub(r'-+', '-', result)
 
 def count_images_in_directory(dir_path: str) -> int:
     count = 0
