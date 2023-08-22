@@ -85,7 +85,7 @@ def get_datasets() -> Tuple[LegoBinaryDataset, LegoBinaryDataset]:
             transforms.Resize(config.RESIZE_TO_SHAPE),
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.ToTensor(),
-            transforms.Normalize([0.5 for _ in range(config.CHANNELS_IMG)], [0.5 for _ in range(config.CHANNELS_IMG)])
+            transforms.Normalize([0.5 for _ in range(config.IMAGE_CHANNELS)], [0.5 for _ in range(config.IMAGE_CHANNELS)])
         ]
     )
     test_transforms = transforms.Compose(

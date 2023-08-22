@@ -5,36 +5,13 @@ from torch import nn
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid
 from typing import Tuple
+from torchvision.utils import make_grid, save_image
 
-
-def show_tensor_images(
-    image: torch.Tensor,
-    num_images: int = 25,
-    size: Tuple[int, int, int] = (1, 28, 28),
-    save_as_png: bool = True,
-    epoch: int = None,
-    category: str = "real",
-) -> None:
-    """Function for visualizing images: Given a tensor of images, number of images, and
-    size per image, plots and prints the images in an uniform grid.
-
-    Args:
-        image (torch.Tensor): Tensor of images.
-        num_images (int, optional): Number of images to display. Defaults to 25.
-        size (Tuple[int, int, int], optional): Dimensions of a single image. Defaults to (1, 28, 28).
-    """
-    image = (image + 1) / 2
-    image_unflat = image.detach().cpu()
+def save_tensor_images(image_tensor, num_images=25, size=(1, 28, 28), img_type:str='real', epoch:int=0,step=0):
+    image_tensor = (image_tensor + 1) / 2
+    image_unflat = image_tensor.detach().cpu()
     image_grid = make_grid(image_unflat[:num_images], nrow=5)
-    plt.imshow(image_grid.permute(1, 2, 0).squeeze())
-    plt.axis(False)
-    plt.title(f"Epoch: {epoch}")
-
-    if save_as_png:
-        path = f"./data/mnist/evaluation/{category}"
-        if not os.path.exists(path):
-            os.makedirs(path)
-        plt.savefig(f"{path}/{epoch}.png")
+    save_image(image_grid, f"dcgan\images\{img_type}\epoch-{epoch}-step-{step}.png")
 
 
 def print_training_progress(
@@ -64,7 +41,7 @@ def sample_noise(n_samples: int, z_dim: int, device: str = "cpu") -> torch.Tenso
     Returns:
         torch.Tensor: Noise vector of dimensions (n_samples, z_dim)
     """
-    return torch.randn(n_samples, z_dim, 1, 1, device=device)
+    return torch.randn(n_samples, z_dim, device=device)
 
 
 def weights_init(m):
@@ -104,11 +81,20 @@ def print_training_info() -> None:
     )
 
 
-# TODO: run the coursera notebook and compare its performance
-# TODO: Plot generator and discriminator loss
+def setup_generated_image_folders() -> None:
+    """
+    Set up folders for generated images.
 
-if __name__ == "__main__":
-    # Test image saving
-    image = torch.randn(32, 3, 28, 28)
-    noise = sample_noise(config.BATCH_SIZE, config.Z_DIM, config.DEVICE)
-    print(noise.shape)
+    This function creates the necessary folder structure to organize generated
+    images into 'fake' and 'real' subfolders under the './images' directory.
+    """
+    path = "./dcgan/images"
+    fake = "./dcgan/images/fake"
+    real = "./dcgan/images/real"
+    # Create folders for generated images
+    if not os.path.exists(path):
+        os.makedirs(path)
+    if not os.path.exists(fake):
+        os.makedirs(fake)
+    if not os.path.exists(real):
+        os.makedirs(real)

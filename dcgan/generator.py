@@ -3,13 +3,13 @@ from torch import nn
 import config as c
 
 class Generator(nn.Module):
-    def __init__(self, z_dim: int=c.Z_DIM, im_chan: int=c.IMAGE_CHANNELS, hc: int=c.HIDDEN_CHANNELS):
+    def __init__(self, z_dim: int=c.Z_DIM, im_chan: int=c.IMAGE_CHANNELS, hc: int=c.HIDDEN_CHANNELS_GEN):
         """Generator Model.
 
         Args:
             z_dim (int, optional): Dimension of the noise vector. Defaults to c.Z_DIM.
             im_chan (int, optional): Number of channels in the image (here 3, because it is a RGB image). Defaults to c.IMAGE_CHANNELS.
-            hc (int, optional): Hidden Channels, a short name is used for better code readability. Defaults to c.HIDDEN_CHANNELS.
+            hc (int, optional): Hidden Channels, a short name is used for better code readability. Defaults to c.HIDDEN_CHANNELS_GEN.
         """
         super(Generator, self).__init__()
         self.z_dim = z_dim

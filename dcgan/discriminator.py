@@ -33,11 +33,11 @@ class Discriminator(nn.Module):
             )
         else:  # Final Layer
             return nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size, stride)
+                nn.Conv2d(in_channels, out_channels, kernel_size, stride),
                 nn.LeakyReLU(negative_slope=0.2) # ! ?Not sure
             )
 
-    def forward(self, image: torch.Tenor) -> torch.Tensor:
+    def forward(self, image: torch.Tensor) -> torch.Tensor:
         """Function for completing a forward pass of the discriminator. Given an image tensor it returns a 1-dimensional tensor representing real or fake.
 
         Args:
