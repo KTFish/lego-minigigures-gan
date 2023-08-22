@@ -3,12 +3,18 @@ from torch import nn
 import config as c
 
 class Discriminator(nn.Module):
-    def __init__(self, im_chan: int=c.IMAGE_CHANNELS, hidden_dim: int=c.HIDDEN_CHANNELS_DISC):
+    def __init__(self, im_chan: int=c.IMAGE_CHANNELS, hc: int=c.HIDDEN_CHANNELS_DISC):
+        """Discriminator Model.
+
+        Args:
+            im_chan (int, optional): Channels of the input image. Defaults to c.IMAGE_CHANNELS.
+            hc (int, optional): Hidden Channels of the model. Defaults to c.HIDDEN_CHANNELS_DISC.
+        """
         super(Discriminator, self).__init__()
         self.disc = nn.Sequential(
-            self.block(im_chan, hidden_dim),
-            self.block(hidden_dim, hidden_dim * 2),
-            self.block(hidden_dim * 2, 1, final_layer=True),
+            self.block(im_chan, hc),
+            self.block(hc, hc * 2),
+            self.block(hc * 2, 1, final_layer=True),
         )
 
     def block(
