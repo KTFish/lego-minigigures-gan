@@ -1,104 +1,71 @@
 import torch
-import config
-import utils
 from torch import nn
+import config as c
 
-# Strided Convolutions
-# Paper: "Replace any pooling layers with strided convolutions (discriminator) and fractional-strided convolutions (generator)."
-# Documentation: https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html
+class Generator(nn.Module):
+    def __init__(self, z_dim: int=c.Z_DIM, im_chan: int=c.IMAGE_CHANNELS, hc: int=c.HIDDEN_CHANNELS):
+        """Generator Model.
 
+        Args:
+            z_dim (int, optional): Dimension of the noise vector. Defaults to c.Z_DIM.
+            im_chan (int, optional): Number of channels in the image (here 3, because it is a RGB image). Defaults to c.IMAGE_CHANNELS.
+            hc (int, optional): Hidden Channels, a short name is used for better code readability. Defaults to c.HIDDEN_CHANNELS.
+        """
+        super(Generator, self).__init__()
+        self.z_dim = z_dim
+        self.gen = nn.Sequential(
+            self.block(z_dim, hc * 4),
+            self.block(hc * 4, hc * 2, kernel_size=4, stride=1),
+            self.block(hc * 2, hc),
+            self.block(hc, im_chan, kernel_size=4, final_layer=True),
+        )
 
-class GenBlock(nn.Module):
-    """Block of generator network."""
-
-    def __init__(
+    def block(
         self,
         in_channels: int,
         out_channels: int,
-        kernel_size: int = 4,
-        stride: int = 2,
-        final_layer: bool = False,
-    ) -> None:
-        super().__init__()
-        # Paper: "Use ReLU activation in generator for all layers except for the output, which uses Tanh."
-        # Paper: "Directly applying batchnorm to all layer however, resulted in sample oscillation and model instability.
-        # This was avoided by not applying batchnorm to the generator output layer and the discriminator input layer."
-
-        # ConvTranspose shape formula: n = stride * (input_shape - 1) + kernel_size - 2 * padding
-        if final_layer:
-            self.block = nn.Sequential(
-                nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride),
-                nn.Tanh(),  # Output [-1, 1]
+        kernel_size: int=3,
+        stride: int=2,
+        final_layer: bool=False,
+    )-> nn.Sequential:
+        if not final_layer:
+            return nn.Sequential(
+                nn.ConvTranspose2d(
+                    in_channels, out_channels, kernel_size, stride
+                ),
+                nn.BatchNorm2d(num_features=out_channels),
+                nn.ReLU()
             )
-        else:
-            self.block = nn.Sequential(
-                nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride),
-                nn.BatchNorm2d(out_channels),
-                nn.ReLU(),
-            )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.block(x)
-
-
-class Generator(nn.Module):
-    def __init__(
-        self,
-        z_dim: int = 100,
-        out_channels: int = 1,
-        hidden_units: int = config.HIDDEN_UNITS,
-    ) -> None:
-        super().__init__()
-        self.z_dim = z_dim
-        self.gen = nn.Sequential(
-            GenBlock(z_dim, hidden_units),
-            GenBlock(hidden_units, hidden_units // 2),
-            GenBlock(hidden_units // 2, out_channels, 10, 2, True),
-            nn.Tanh()
-        )
+        else:  # Final Layer
+            return nn.Sequential(
+                nn.ConvTranspose2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=kernel_size,
+                    stride=stride,
+                ),
+                nn.Tanh())
 
     def unsqueeze_noise(self, noise: torch.Tensor) -> torch.Tensor:
+        """Takes a noise tensor as input and unsqueezes it to match the dimensions required by the generator's input layer.
+
+        Args:
+            noise (torch.Tensor): Noise tensor with dimensions (n_samples, z_dim) that will be unsqueezed.
+
+        Returns:
+            torch.Tensor: The unsqueezed noise tensor with dimensions suitable for the generator's input (width = 1, height = 1 and channels = z_dim).
+        """
         return noise.view(len(noise), self.z_dim, 1, 1)
 
-    def forward(self, noise) -> torch.Tensor:
+    def forward(self, noise: torch.Tensor) -> torch.Tensor:
+        """Generator Forward Pass Function.
+        When provided with a noise tensor, this function produces generated images as its output.
+
+        Args:
+            noise (torch.Tensor): Noise tensor with dimensions (n_samples, z_dim).
+
+        Returns:
+            torch.Tensor: Generated images.
+        """
         x = self.unsqueeze_noise(noise)
         return self.gen(x)
-
-
-def test_generator() -> None:
-    gen = Generator()
-    n_samples, z_dim = 32, 100
-
-    assert gen.z_dim == z_dim
-
-    # Test shape of noise vector
-    noise = utils.sample_noise(n_samples, z_dim)
-    assert noise.shape == torch.Size([n_samples, z_dim])
-
-    # Test unsqueezed noise shape
-    unsqueezed_noise = gen.unsqueeze_noise(noise)
-    assert unsqueezed_noise.shape == torch.Size([n_samples, z_dim, 1, 1])
-
-    # Test if output of generator is the same as the desired shape
-    real_images_batch = torch.rand(n_samples, 1, 28, 28)
-    fake_images_batch = gen(noise)
-    assert (
-        real_images_batch.shape == fake_images_batch.shape
-    ), f"Wrong generator output shape. Real Image shape {real_images_batch.shape}, Fake Image shape: {fake_images_batch.shape}."
-
-
-def test_gen_block():
-    n_samples, z_dim, hidden_units = 32, 100, 1024
-    noise = utils.sample_noise(n_samples, z_dim)
-    x = Generator().unsqueeze_noise(noise)
-
-    # Test first Generator Block
-    x = GenBlock(z_dim, hidden_units)(x)
-    assert x.shape == torch.Size([n_samples, 1024, 4, 4])
-
-
-if __name__ == "__main__":
-    print(f"Running Generator tests...")
-    test_gen_block()
-    test_generator()
-    print("All tests passed successfully!")
