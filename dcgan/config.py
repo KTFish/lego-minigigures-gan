@@ -3,12 +3,14 @@ import torch
 from torch import nn
 
 # Data
-RESIZE_TO_SHAPE = (28, 28)
+# !RESIZE_TO_SHAPE = (28, 28)
+RESIZE_TO_SHAPE = (224, 224)
 
 # Hyper parameters
 LEARNING_RATE = 0.0002
 BETAS = (0.5, 0.999)
-BATCH_SIZE = 128
+# !BATCH_SIZE = 128
+BATCH_SIZE = 32
 
 Z_DIM = 10
 HIDDEN_CHANNELS_GEN = 64

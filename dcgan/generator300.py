@@ -2,6 +2,7 @@
 import torch
 from torch import nn
 import config as c
+import utils
 
 class Generator300(nn.Module):
     def __init__(self, z_dim: int=c.Z_DIM, im_chan: int=c.IMAGE_CHANNELS, hc: int=c.HIDDEN_CHANNELS_GEN):
@@ -82,14 +83,15 @@ def calculate_transpose_settings(input_size, output_size, kernel_size):
     return stride, padding
 
 
-if __name__ == "__main__":
-    input_size, output_size = 6, 13
-    target_size = 300
-    kernel_size=3
+def test_generator_output_shape() -> None:
+    """Function tests if the output shape matches the desired one."""
+    gen = Generator300().to(c.DEVICE)
+    noise = utils.sample_noise(c.BATCH_SIZE, c.Z_DIM)
+    output = gen(noise)
 
-    while output_size < target_size:
-        s, p = calculate_transpose_settings(input_size, output_size, kernel_size)
-        print(f"{input_size} ---> {output_size} | Stride: {s}")
-        
-        # Update input and output sizes for the next iteration
-        input_size, output_size = output_size, s * (input_size - 1) + kernel_size - 2 * p
+    height, width = c.RESIZE_TO_SHAPE
+    assert output.shape == torch.Size([c.BATCH_SIZE, c.IMAGE_CHANNELS, height, width])
+
+
+if __name__ == "__main__":
+   test_generator_output_shape()

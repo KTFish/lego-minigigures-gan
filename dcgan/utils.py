@@ -7,7 +7,7 @@ from torchvision.utils import make_grid
 from typing import Tuple
 from torchvision.utils import make_grid, save_image
 
-def save_tensor_images(image_tensor, num_images=25, size=(1, 28, 28), img_type:str='real', epoch:int=0,step=0):
+def save_tensor_images(image_tensor: torch.Tensor, num_images: int=25, img_type:str='real', epoch:int=0, step=0) -> None:
     image_tensor = (image_tensor + 1) / 2
     image_unflat = image_tensor.detach().cpu()
     image_grid = make_grid(image_unflat[:num_images], nrow=5)
@@ -29,7 +29,7 @@ def print_training_progress(
     )
 
 
-def sample_noise(n_samples: int, z_dim: int, device: str = "cpu") -> torch.Tensor:
+def sample_noise(n_samples: int, z_dim: int, device: str = config.DEVICE) -> torch.Tensor:
     """Function for creating noise vectors: Given the dimensions (n_samples, z_dim)
     creates a tensor of that shape filled with random numbers from the uniform distribution.
 
