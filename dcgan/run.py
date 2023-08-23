@@ -12,7 +12,7 @@ from tqdm import tqdm
 utils.setup_generated_image_folders()
 
 # ! dataloader, _ = get_dataloaders(c.BATCH_SIZE)
-dataloader = get_dataloader()
+dataloader = get_dataloader(c.BATCH_SIZE)
 
 # ! gen = Generator(c.Z_DIM).to(c.DEVICE)
 from generator300 import Generator300
@@ -33,7 +33,7 @@ display_step=c.DISPLAY_STEP
 
 for epoch in range(c.NUM_EPOCHS):
     # Dataloader returns the batches
-    for real, _ in tqdm(dataloader):
+    for real in tqdm(dataloader):
         cur_batch_size = len(real)
         real = real.to(c.DEVICE)
 
