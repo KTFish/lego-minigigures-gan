@@ -40,7 +40,7 @@ class OnlyLegoDataset(Dataset):
             return img
 
 
-def get_datasets() -> Tuple[OnlyLegoDataset]:
+def get_dataset() -> Tuple[OnlyLegoDataset]:
     train_transforms = transforms.Compose(
         [
             transforms.Resize(config.RESIZE_TO_SHAPE),
@@ -57,9 +57,7 @@ def get_datasets() -> Tuple[OnlyLegoDataset]:
     return dataset
 
 
-def get_dataloaders(batch_size: int) -> Tuple[DataLoader, DataLoader]:
-    train_dataset, test_dataset = get_datasets()
+def get_dataloader(batch_size: int) -> Tuple[DataLoader, DataLoader]:
+    train_dataset = get_dataset()
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-
-    return train_loader, test_loader
+    return train_loader

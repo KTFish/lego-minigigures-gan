@@ -1,5 +1,6 @@
 import os
 import torch
+from only_lego_dataset import get_dataloader
 from dataset import get_dataloaders
 import config as c
 from generator import Generator
@@ -10,7 +11,8 @@ from tqdm import tqdm
 
 utils.setup_generated_image_folders()
 
-dataloader, _ = get_dataloaders(c.BATCH_SIZE)
+# ! dataloader, _ = get_dataloaders(c.BATCH_SIZE)
+dataloader = get_dataloader()
 
 # ! gen = Generator(c.Z_DIM).to(c.DEVICE)
 from generator300 import Generator300
