@@ -12,11 +12,13 @@ class Discriminator300(nn.Module):
         """
         super(Discriminator300, self).__init__()
         self.disc = nn.Sequential(
-            self.block(im_chan, hc),
-            self.block(hc, hc * 2),
-            self.block(hc * 2, hc * 4),
-            self.block(hc * 4, hc * 8),
-            self.block(hc * 8, 1, final_layer=True),
+            self.block(im_chan, hc, 2, 2),      # 224x224 --> 112x112
+            self.block(hc, hc * 2, 2, 2),       # 112x112 --> 56x56
+            self.block(hc * 2, hc * 4, 2, 2),   # 56x56 --> 28x28
+            self.block(hc * 4, hc * 8, 2, 2),   # 28x28 --> 14x14
+            self.block(hc * 8, hc * 16, 2, 2),  # 14x14 --> 7x7
+            self.block(hc * 16, hc * 32, 2, 2),  # 7x7 --> 3x3
+            self.block(hc * 32, 1, 2, 2, final_layer=True),  # 3x3 --> 1x1
         )
 
     def block(
@@ -50,3 +52,15 @@ class Discriminator300(nn.Module):
         """
         disc_pred = self.disc(image)
         return disc_pred.view(len(disc_pred), -1)
+
+def test_discriminator_output_shape() -> None:
+    """Function tests if the output shape matches the desired one."""
+    disc = Discriminator300().to(c.DEVICE)
+    height, width = c.RESIZE_TO_SHAPE
+    image = torch.randn(c.BATCH_SIZE, c.IMAGE_CHANNELS, height, width).to(c.DEVICE)
+    output = disc(image)
+    assert output.shape == torch.Size([c.BATCH_SIZE, 1])
+
+
+if __name__ == "__main__":
+   test_discriminator_output_shape()
