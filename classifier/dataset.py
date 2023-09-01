@@ -1,19 +1,10 @@
 import torch
-import torchvision
-import PIL
 import os
 import pathlib
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 from typing import Tuple, List, Dict
-
-
-# TODO: Change the dataset so that it has the aroppriate structure
-
-# TODO: Write custom dataset: https://www.learnpytorch.io/04_pytorch_custom_datasets/#52-create-a-custom-dataset-to-replicate-imagefolder
-# TODO: Write transforms, resize the image to a smaller size, do some augmentation
-# TODO: Creata dataloaders
 
 
 def find_classes(directory: str) -> Tuple[List[str], Dict[str, int]]:

@@ -1,6 +1,13 @@
 chromedriver.exe
+*.png
+all.py
 temp.html
+*/temp/*
+logs/
+data/
+cifar*/
 dataset\
+cifar-10-python.tar.gz
 preprocessed_dataset/
 *.pt
 *.pth
